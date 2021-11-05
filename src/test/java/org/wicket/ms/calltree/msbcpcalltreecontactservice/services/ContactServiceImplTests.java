@@ -34,7 +34,7 @@ class ContactServiceImplTests {
     }
 
     @Test
-    void saveOrUpdate_AddsNewEntryToRepository_givenNewContactDao() {
+    void saveOrUpdate_returnsContactDto_givenNewContactDto() {
         Contact contact = Contact.builder()
                 .id(null)
                 .firstName("John")
@@ -72,7 +72,7 @@ class ContactServiceImplTests {
     }
 
     @Test
-    void saveOrUpdate_returnsContactDao_givenExistingContactDaa() {
+    void saveOrUpdate_returnsContactDto_givenExistingContactDto() {
         Contact contact = Contact.builder()
                 .id(1L)
                 .firstName("John")
