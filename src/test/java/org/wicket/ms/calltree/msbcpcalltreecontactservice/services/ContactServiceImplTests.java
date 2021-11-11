@@ -196,4 +196,48 @@ class ContactServiceImplTests {
         Mockito.verify(contactMapper, Mockito.times(2)).contactToDto(contactArgumentCaptor.capture());
         Mockito.verify(contactMapper, Mockito.times(2)).dtoToContact(contactDtoArgumentCaptor.capture());
     }
+	
+	  @Test
+    void findById_throwsException_givenNull() {
+        when(contactRepository.findById(null)).thenThrow(ContactException.class);
+
+        Assertions.assertThrows(ContactException.class, () -> {
+            contactService.findById(null);
+        });
+    }
+
+    @Test
+    void findById_returnsContactDao_givenExistingContact() {
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        Optional<Contact> optionalContact = Optional.of(contact);
+
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactRepository.findById(1L)).thenReturn(optionalContact);
+
+        assertEquals(contactDto, contactService.findById(1L));
+    }
+
+    @Test
+    void findById_throwsException_givenNonExistingContactId() {
+        Optional<Contact> optionalContact = Optional.empty();
+
+        when(contactRepository.findById(1L)).thenReturn(optionalContact);
+
+        Assertions.assertThrows(ContactException.class, () -> {
+            contactService.findById(1L);
+        });
+    }
 }
