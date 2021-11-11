@@ -8,6 +8,8 @@ import org.wicket.ms.calltree.msbcpcalltreecontactservice.mappers.ContactMapper;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.models.Contact;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.repository.ContactRepository;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ContactServiceImpl implements ContactService{
@@ -30,5 +32,21 @@ public class ContactServiceImpl implements ContactService{
         }else{
             throw new ContactException("Contact not found");
         }
+    }
+     
+    @Override
+    public List<ContactDto> saveList(List<ContactDto> contactDtoList) {
+
+        List<Contact> newContactList = contactDtoList
+                .stream()
+                .map(mapper::dtoToContact)
+                .toList();
+
+        List<Contact> savedContactList = repository.saveAll(newContactList);
+
+        return savedContactList
+                .stream()
+                .map(mapper::contactToDto)
+                .toList();
     }
 }
