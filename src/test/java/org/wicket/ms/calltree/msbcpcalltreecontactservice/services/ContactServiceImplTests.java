@@ -6,15 +6,16 @@ import org.mockito.*;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.dto.ContactDto;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.enums.Role;
+import org.wicket.ms.calltree.msbcpcalltreecontactservice.exceptions.ContactException;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.mappers.ContactMapper;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.models.Contact;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.repository.ContactRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -103,14 +104,6 @@ class ContactServiceImplTests {
         when(contactRepository.save(contact)).thenReturn(contact);
 
         assertEquals(contactDto, contactService.saveOrUpdate(contactDto));
-    }
-
-    @Test
-    void saveList_throwsError_givenNull() {
-        when(contactRepository.saveAll(null)).thenThrow(IllegalArgumentException.class);
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            contactService.saveList(null);
-        });
     }
 
     @Test
