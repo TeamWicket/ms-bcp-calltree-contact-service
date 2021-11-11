@@ -49,4 +49,10 @@ public class ContactServiceImpl implements ContactService{
                 .map(mapper::contactToDto)
                 .toList();
     }
+
+    @Override
+    public ContactDto fetchContactByPhoneNumber(String phoneNumber) {
+        var contact = repository.findByPhoneNumber(phoneNumber);
+        return contact.map(mapper::contactToDto).orElse(null);
+    }
 }
