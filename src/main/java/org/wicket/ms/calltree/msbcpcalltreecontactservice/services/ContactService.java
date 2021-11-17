@@ -11,4 +11,6 @@ public interface ContactService {
     ContactDto findById(Long id);
 
     List<ContactDto> saveList (List<ContactDto> contactDtoList);
+
+    List<ContactDto> fetchManyContactsById(long[] id);
 }
