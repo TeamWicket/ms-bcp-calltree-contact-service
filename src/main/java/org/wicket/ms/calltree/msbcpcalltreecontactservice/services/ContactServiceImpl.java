@@ -49,4 +49,9 @@ public class ContactServiceImpl implements ContactService{
                 .map(mapper::contactToDto)
                 .toList();
     }
+
+    @Override
+    public void deleteContact(Long id) {
+        repository.deleteById(id);
+    }
 }
