@@ -233,4 +233,67 @@ class ContactServiceImplTests {
             contactService.findById(1L);
         });
     }
+
+    @Test
+    void getNumContacts_returnsZero_whenNoContacts() {
+        when(contactRepository.count()).thenReturn(0L);
+        assertEquals(0, contactService.getNumContacts());
+    }
+
+    @Test
+    void getNumContacts_returnsAnInteger_whenContacts() {
+        when(contactRepository.count()).thenReturn(3L);
+        assertEquals(3, contactService.getNumContacts());
+    }
+
+    @Test
+    void getAllSelectedRole_returnsEmptyList_whenNoContacts() {
+        when(contactRepository.findAllByRoleEquals(Role.REPORTER)).thenReturn(new ArrayList<>());
+        assertEquals(0, contactService.getAllSelectedRole(Role.REPORTER).size());
+        assertEquals(0, contactService.getAllSelectedRole(Role.REPORTER).size());
+    }
+
+    @Test
+    void getAllSelectedRole_returnsListOfContacts_whenContacts() {
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contact2Dto = ContactDto.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        List<Contact> contactList = new ArrayList<>();
+        contactList.add(contact);
+        contactList.add(contact2);
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactMapper.contactToDto(contact2)).thenReturn(contact2Dto);
+        var expectedList = new ArrayList<ContactDto>();
+        expectedList.add(contactDto);
+        expectedList.add(contact2Dto);
+
+        when(contactRepository.findAllByRoleEquals(Role.REPORTER)).thenReturn(contactList);
+        assertEquals(expectedList, contactService.getAllSelectedRole(Role.REPORTER));
+    }
+
 }
