@@ -235,6 +235,44 @@ class ContactServiceImplTests {
     }
 
     @Test
+    void fetchContactByPhoneNumber_returnsNull_givenNull(){
+        assertNull(contactService.fetchContactByPhoneNumber(null));
+    }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsContactDto_givenExistingPhoneNumber(){
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .phoneNumber("1234567890")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .phoneNumber("1234567890")
+                .role(Role.REPORTER)
+                .build();
+
+        Optional<Contact> optionalContact = Optional.of(contact);
+
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactRepository.findByPhoneNumber("1234567890")).thenReturn(optionalContact);
+        assertEquals(contactDto, contactService.fetchContactByPhoneNumber(contact.getPhoneNumber()));
+    }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsNull_givenNonExistingPhoneNumber(){
+        Optional<Contact> optionalContact = Optional.empty();
+        when(contactRepository.findByPhoneNumber("test")).thenReturn(optionalContact);
+
+        assertNull(contactService.fetchContactByPhoneNumber("test"));
+    }
+
+    @Test
     void getNumContacts_returnsZero_whenNoContacts() {
         when(contactRepository.count()).thenReturn(0L);
         assertEquals(0, contactService.getNumContacts());

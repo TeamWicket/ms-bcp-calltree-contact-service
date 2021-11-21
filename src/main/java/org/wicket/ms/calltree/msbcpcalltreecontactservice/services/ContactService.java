@@ -16,4 +16,9 @@ public interface ContactService {
     List<ContactDto> getAllSelectedRole(Role role);
 
     Integer getNumContacts();
+
+    public void deleteContact(Long id);
+
+    ContactDto fetchContactByPhoneNumber(String string);
+
 }
