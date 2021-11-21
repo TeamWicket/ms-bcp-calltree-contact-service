@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -232,5 +233,43 @@ class ContactServiceImplTests {
         Assertions.assertThrows(ContactException.class, () -> {
             contactService.findById(1L);
         });
+    }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsNull_givenNull(){
+        assertNull(contactService.fetchContactByPhoneNumber(null));
+    }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsContactDto_givenExistingPhoneNumber(){
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .phoneNumber("1234567890")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .phoneNumber("1234567890")
+                .role(Role.REPORTER)
+                .build();
+
+        Optional<Contact> optionalContact = Optional.of(contact);
+
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactRepository.findByPhoneNumber("1234567890")).thenReturn(optionalContact);
+        assertEquals(contactDto, contactService.fetchContactByPhoneNumber(contact.getPhoneNumber()));
+    }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsNull_givenNonExistingPhoneNumber(){
+        Optional<Contact> optionalContact = Optional.empty();
+        when(contactRepository.findByPhoneNumber("test")).thenReturn(optionalContact);
+
+        assertNull(contactService.fetchContactByPhoneNumber("test"));
     }
 }
