@@ -9,6 +9,7 @@ import org.wicket.ms.calltree.msbcpcalltreecontactservice.mappers.ContactMapper;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.models.Contact;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.repository.ContactRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -49,6 +50,20 @@ public class ContactServiceImpl implements ContactService{
                 .stream()
                 .map(mapper::contactToDto)
                 .toList();
+    }
+
+    @Override
+    public List<ContactDto> fetchManyContactsById(long[] id) {
+        List<ContactDto> contactDtoList = new ArrayList<>();
+        for (long i : id) {
+            var contact = repository.findById(i);
+            if(contact.isPresent()) {
+                contactDtoList.add(mapper.contactToDto(contact.get()));
+            }else{
+                throw new ContactException("Contact not found");
+            }
+        }
+        return contactDtoList;
     }
 
     @Override

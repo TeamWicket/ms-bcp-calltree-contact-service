@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
@@ -232,6 +233,63 @@ class ContactServiceImplTests {
 
         Assertions.assertThrows(ContactException.class, () -> {
             contactService.findById(1L);
+        });
+    }
+
+    @Test
+    void fetchManyContactsById_returnsListContactDtos_givenExistingContacts() {
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contact2Dto = ContactDto.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        List<ContactDto> contactDtoList = new ArrayList<>();
+        List<Contact> contactList = new ArrayList<>();
+
+        contactDtoList.add(contactDto);
+        contactDtoList.add(contact2Dto);
+
+        contactList.add(contact);
+        contactList.add(contact2);
+
+        when(contactRepository.findById(1L)).thenReturn(Optional.ofNullable(contact));
+        when(contactRepository.findById(2L)).thenReturn(Optional.ofNullable(contact2));
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactMapper.contactToDto(contact2)).thenReturn(contact2Dto);
+
+        assertEquals(contactDtoList, contactService.fetchManyContactsById(new long[] {1L, 2L}));
+        Mockito.verify(contactMapper, Mockito.times(2)).contactToDto(contactArgumentCaptor.capture());
+    }
+
+    @Test
+    void fetchManyContactsById_throwsException_givenNonExistingContacts() {
+        when(contactRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Assertions.assertThrows(ContactException.class, () -> {
+            contactService.fetchManyContactsById(new long[] {1L, 2L});
         });
     }
 
