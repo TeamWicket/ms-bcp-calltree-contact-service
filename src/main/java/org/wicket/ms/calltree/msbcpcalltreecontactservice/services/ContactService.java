@@ -12,6 +12,8 @@ public interface ContactService {
 
     List<ContactDto> saveList (List<ContactDto> contactDtoList);
 
+    public void deleteContact(Long id);
+
     ContactDto fetchContactByPhoneNumber(String string);
 
 }

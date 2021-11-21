@@ -51,6 +51,11 @@ public class ContactServiceImpl implements ContactService{
     }
 
     @Override
+    public void deleteContact(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
     public ContactDto fetchContactByPhoneNumber(String phoneNumber) {
         var contact = repository.findByPhoneNumber(phoneNumber);
         return contact.map(mapper::contactToDto).orElse(null);
