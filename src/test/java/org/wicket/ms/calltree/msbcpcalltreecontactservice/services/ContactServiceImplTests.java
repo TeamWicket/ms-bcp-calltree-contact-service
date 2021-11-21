@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
 
 @SpringBootTest
@@ -291,4 +292,105 @@ class ContactServiceImplTests {
             contactService.fetchManyContactsById(new long[] {1L, 2L});
         });
     }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsNull_givenNull(){
+        assertNull(contactService.fetchContactByPhoneNumber(null));
+    }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsContactDto_givenExistingPhoneNumber(){
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .phoneNumber("1234567890")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .phoneNumber("1234567890")
+                .role(Role.REPORTER)
+                .build();
+
+        Optional<Contact> optionalContact = Optional.of(contact);
+
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactRepository.findByPhoneNumber("1234567890")).thenReturn(optionalContact);
+        assertEquals(contactDto, contactService.fetchContactByPhoneNumber(contact.getPhoneNumber()));
+    }
+
+    @Test
+    void fetchContactByPhoneNumber_returnsNull_givenNonExistingPhoneNumber(){
+        Optional<Contact> optionalContact = Optional.empty();
+        when(contactRepository.findByPhoneNumber("test")).thenReturn(optionalContact);
+
+        assertNull(contactService.fetchContactByPhoneNumber("test"));
+    }
+
+    @Test
+    void getNumContacts_returnsZero_whenNoContacts() {
+        when(contactRepository.count()).thenReturn(0L);
+        assertEquals(0, contactService.getNumContacts());
+    }
+
+    @Test
+    void getNumContacts_returnsAnInteger_whenContacts() {
+        when(contactRepository.count()).thenReturn(3L);
+        assertEquals(3, contactService.getNumContacts());
+    }
+
+    @Test
+    void getAllSelectedRole_returnsEmptyList_whenNoContacts() {
+        when(contactRepository.findAllByRoleEquals(Role.REPORTER)).thenReturn(new ArrayList<>());
+        assertEquals(0, contactService.getAllSelectedRole(Role.REPORTER).size());
+        assertEquals(0, contactService.getAllSelectedRole(Role.REPORTER).size());
+    }
+
+    @Test
+    void getAllSelectedRole_returnsListOfContacts_whenContacts() {
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contact2Dto = ContactDto.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        List<Contact> contactList = new ArrayList<>();
+        contactList.add(contact);
+        contactList.add(contact2);
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactMapper.contactToDto(contact2)).thenReturn(contact2Dto);
+        var expectedList = new ArrayList<ContactDto>();
+        expectedList.add(contactDto);
+        expectedList.add(contact2Dto);
+
+        when(contactRepository.findAllByRoleEquals(Role.REPORTER)).thenReturn(contactList);
+        assertEquals(expectedList, contactService.getAllSelectedRole(Role.REPORTER));
+    }
+
 }

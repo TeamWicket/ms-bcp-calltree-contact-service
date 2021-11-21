@@ -3,6 +3,7 @@ package org.wicket.ms.calltree.msbcpcalltreecontactservice.services;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.dto.ContactDto;
+import org.wicket.ms.calltree.msbcpcalltreecontactservice.enums.Role;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.exceptions.ContactException;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.mappers.ContactMapper;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.models.Contact;
@@ -63,5 +64,30 @@ public class ContactServiceImpl implements ContactService{
             }
         }
         return contactDtoList;
+    }
+
+    @Override
+    public void deleteContact(Long id) {
+        repository.deleteById(id);
+    }
+
+    @Override
+    public ContactDto fetchContactByPhoneNumber(String phoneNumber) {
+        var contact = repository.findByPhoneNumber(phoneNumber);
+        return contact.map(mapper::contactToDto).orElse(null);
+    }
+
+    @Override
+    public List<ContactDto> getAllSelectedRole(Role role) {
+        var contacts = repository.findAllByRoleEquals(role);
+        return contacts
+                .stream()
+                .map(mapper::contactToDto)
+                .toList();
+    }
+
+    @Override
+    public Integer getNumContacts(){
+        return Math.toIntExact(repository.count());
     }
 }
