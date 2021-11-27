@@ -4,6 +4,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.*;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.dto.ContactDto;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.enums.Role;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.exceptions.ContactException;
@@ -12,13 +15,14 @@ import org.wicket.ms.calltree.msbcpcalltreecontactservice.models.Contact;
 import org.wicket.ms.calltree.msbcpcalltreecontactservice.repository.ContactRepository;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.when;
+import static org.springframework.data.domain.Sort.by;
 
 @SpringBootTest
 class ContactServiceImplTests {
@@ -109,7 +113,7 @@ class ContactServiceImplTests {
     }
 
     @Test
-    void saveList_returnsListContactDto_givenListOfContactDtos(){
+    void saveList_returnsListContactDto_givenListOfContactDtos() {
         Contact contact = Contact.builder()
                 .id(1L)
                 .firstName("John")
@@ -141,7 +145,7 @@ class ContactServiceImplTests {
     }
 
     @Test
-    void saveList_returnsListContactDtos_givenMultipleContactDtos(){
+    void saveList_returnsListContactDtos_givenMultipleContactDtos() {
         Contact contact = Contact.builder()
                 .id(1L)
                 .firstName("John")
@@ -191,8 +195,8 @@ class ContactServiceImplTests {
         Mockito.verify(contactMapper, Mockito.times(2)).contactToDto(contactArgumentCaptor.capture());
         Mockito.verify(contactMapper, Mockito.times(2)).dtoToContact(contactDtoArgumentCaptor.capture());
     }
-	
-	  @Test
+
+    @Test
     void findById_throwsException_givenNull() {
         when(contactRepository.findById(null)).thenThrow(ContactException.class);
 
@@ -280,7 +284,7 @@ class ContactServiceImplTests {
         when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
         when(contactMapper.contactToDto(contact2)).thenReturn(contact2Dto);
 
-        assertEquals(contactDtoList, contactService.fetchManyContactsById(new long[] {1L, 2L}));
+        assertEquals(contactDtoList, contactService.fetchManyContactsById(new long[]{1L, 2L}));
         Mockito.verify(contactMapper, Mockito.times(2)).contactToDto(contactArgumentCaptor.capture());
     }
 
@@ -289,17 +293,17 @@ class ContactServiceImplTests {
         when(contactRepository.findById(1L)).thenReturn(Optional.empty());
 
         Assertions.assertThrows(ContactException.class, () -> {
-            contactService.fetchManyContactsById(new long[] {1L, 2L});
+            contactService.fetchManyContactsById(new long[]{1L, 2L});
         });
     }
 
     @Test
-    void fetchContactByPhoneNumber_returnsNull_givenNull(){
+    void fetchContactByPhoneNumber_returnsNull_givenNull() {
         assertNull(contactService.fetchContactByPhoneNumber(null));
     }
 
     @Test
-    void fetchContactByPhoneNumber_returnsContactDto_givenExistingPhoneNumber(){
+    void fetchContactByPhoneNumber_returnsContactDto_givenExistingPhoneNumber() {
         Contact contact = Contact.builder()
                 .id(1L)
                 .firstName("John")
@@ -324,7 +328,7 @@ class ContactServiceImplTests {
     }
 
     @Test
-    void fetchContactByPhoneNumber_returnsNull_givenNonExistingPhoneNumber(){
+    void fetchContactByPhoneNumber_returnsNull_givenNonExistingPhoneNumber() {
         Optional<Contact> optionalContact = Optional.empty();
         when(contactRepository.findByPhoneNumber("test")).thenReturn(optionalContact);
 
@@ -393,4 +397,85 @@ class ContactServiceImplTests {
         assertEquals(expectedList, contactService.getAllSelectedRole(Role.REPORTER));
     }
 
+    @Test
+    void getAllContacts_returnsEmptyList_whenNoContacts() {
+        when(contactRepository.findAll()).thenReturn(new ArrayList<>());
+        assertEquals(0, contactService.getAllContacts(null, null, null, null).size());
+    }
+
+    @Test
+    void getAllContacts_returnsListOfContacts_whenContacts() {
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contact2Dto = ContactDto.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactMapper.contactToDto(contact2)).thenReturn(contact2Dto);
+
+        when(contactRepository.findAll()).thenReturn(Arrays.asList(contact, contact2));
+        assertEquals(2, contactService.getAllContacts(null, null, null, null).size());
+        assertEquals(new ArrayList<ContactDto>(Arrays.asList(contactDto, contact2Dto)), contactService.getAllContacts(null, null, null, null));
+    }
+
+    @Test
+    void getAllContacts_returnsListOfContacts_whenContacts_withPagination() {
+        Contact contact = Contact.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        Contact contact2 = Contact.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contactDto = ContactDto.builder()
+                .id(1L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        ContactDto contact2Dto = ContactDto.builder()
+                .id(2L)
+                .firstName("John")
+                .lastName("Doe")
+                .role(Role.REPORTER)
+                .build();
+
+        var page = new PageImpl<>(Arrays.asList(contact, contact2));
+
+        when(contactMapper.contactToDto(contact)).thenReturn(contactDto);
+        when(contactMapper.contactToDto(contact2)).thenReturn(contact2Dto);
+        when(contactRepository.findAll(PageRequest.of(1, 2, by(Sort.Direction.ASC,"id")))).thenReturn(page);
+        assertEquals(2, contactService.getAllContacts("asc", "id", 1, 2).size());
+    }
 }
